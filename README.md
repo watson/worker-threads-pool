@@ -51,7 +51,7 @@ for (let i = 0; i < 100; i++) {
 
 ### `pool.size`
 
-Number of active workers in the `pool`.
+Number of active workers in the pool.
 
 ### `pool.acquire(filename, options, callback)`
 
