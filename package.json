@@ -1,0 +1,41 @@
+{
+  "name": "worker-threads-pool",
+  "version": "0.0.0",
+  "description": "Easily manage a pool of Node.js Worker Threads",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "after-all": "^2.0.2"
+  },
+  "devDependencies": {
+    "standard": "^11.0.1",
+    "tape": "^4.9.1"
+  },
+  "scripts": {
+    "test": "standard && node --experimental-worker test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/watson/worker-threads-pool.git"
+  },
+  "engines": {
+    "node": ">=10.5.0"
+  },
+  "keywords": [
+    "pool",
+    "worker",
+    "workers",
+    "thread",
+    "threads",
+    "worker_threads",
+    "parallel"
+  ],
+  "author": "Thomas Watson <w@tson.dk> (https://twitter.com/wa7son)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/watson/worker-threads-pool/issues"
+  },
+  "homepage": "https://github.com/watson/worker-threads-pool#readme"
+}
