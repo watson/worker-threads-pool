@@ -1,6 +1,7 @@
 'use strict'
 
 const path = require('path')
+const asyncHooks = require('async_hooks')
 const test = require('tape')
 const Pool = require('../')
 
@@ -230,4 +231,49 @@ test('pool.destroy(callback)', function (t) {
       })
     })
   })
+})
+
+test('async_hooks', function (t) {
+  t.plan(2)
+
+  class Context extends Map {
+    get current () {
+      const asyncId = asyncHooks.executionAsyncId()
+      return this.has(asyncId) ? this.get(asyncId) : null
+    }
+    set current (val) {
+      const asyncId = asyncHooks.executionAsyncId()
+      this.set(asyncId, val)
+    }
+  }
+  const context = new Context()
+
+  const hook = asyncHooks.createHook({
+    init (asyncId, type, triggerAsyncId, resource) {
+      context.set(asyncId, context.current)
+    },
+    destroy (asyncId) {
+      context.delete(asyncId)
+    }
+  })
+  hook.enable()
+
+  let workers = 2
+  const pool = new Pool() // max 1 worker at a time
+  const opts = {workerData: 1000} // hang for 1000ms
+
+  context.current = 1
+  pool.acquire(HANG, opts, function (worker) {
+    t.equal(context.current, 1)
+    worker.on('exit', onExit)
+  })
+  context.current = 2
+  pool.acquire(HANG, opts, function (worker) {
+    t.equal(context.current, 2)
+    worker.on('exit', onExit)
+  })
+
+  function onExit () {
+    if (--workers === 0) t.end()
+  }
 })
