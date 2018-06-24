@@ -12,6 +12,7 @@ module.exports = class Pool {
     this._workers = new Set()
     this._queue = []
     this._max = opts.max || 1
+    this._maxWaiting = opts.maxWaiting || Infinity
   }
 
   get size () {
@@ -21,6 +22,10 @@ module.exports = class Pool {
   acquire (filename, opts, cb) {
     if (typeof opts === 'function') return this.acquire(filename, undefined, opts)
     if (this._workers.size === this._max) {
+      if (this._queue.length === this._maxWaiting) {
+        process.nextTick(cb.bind(null, new Error('Pool queue is full')))
+        return
+      }
       this._queue.push(new QueuedWorkerThread(this, filename, opts, cb))
       return
     }
@@ -33,7 +38,7 @@ module.exports = class Pool {
 
     this._workers.add(worker)
 
-    process.nextTick(cb.bind(null, worker))
+    process.nextTick(cb.bind(null, null, worker))
 
     function done () {
       self._workers.delete(worker)
@@ -62,8 +67,8 @@ class QueuedWorkerThread extends AsyncResource {
   }
 
   addToPool () {
-    this.pool.acquire(this.filename, this.opts, worker => {
-      this.runInAsyncScope(this.cb, null, worker)
+    this.pool.acquire(this.filename, this.opts, (err, worker) => {
+      this.runInAsyncScope(this.cb, null, err, worker)
     })
   }
 }

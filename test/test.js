@@ -17,15 +17,18 @@ test('pool.size', function (t) {
 
   t.equal(pool.size, 0, 'should be 0 before any call to acquire')
   count++
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     t.equal(pool.size, 1, 'should be 1 when 1st worker have been created')
     worker.on('exit', onExit)
     count++
-    pool.acquire(HANG, opts, function (worker) {
+    pool.acquire(HANG, opts, function (err, worker) {
+      t.error(err)
       t.equal(pool.size, 2, 'should be 2 when 2nd worker have been created')
       worker.on('exit', onExit)
       count++
-      pool.acquire(HANG, opts, function (worker) {
+      pool.acquire(HANG, opts, function (err, worker) {
+        t.error(err)
         t.equal(pool.size, 3, 'should be 3 when 3rd worker have been created')
         worker.on('exit', onExit)
       })
@@ -49,16 +52,19 @@ test('pool max size - serial', function (t) {
 
   t.equal(pool.size, 0, 'should be 0 before any call to acquire')
   count++
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     t.equal(pool.size, 1, 'should be 1 when 1st worker have been created')
     worker.on('exit', onExit)
     count++
-    pool.acquire(HANG, opts, function (worker) {
+    pool.acquire(HANG, opts, function (err, worker) {
+      t.error(err)
       t.equal(exits, 0, 'should have experienced 0 exits')
       t.equal(pool.size, 2, 'should be 2 when 2nd worker have been created')
       worker.on('exit', onExit)
       count++
-      pool.acquire(HANG, opts, function (worker) {
+      pool.acquire(HANG, opts, function (err, worker) {
+        t.error(err)
         t.equal(exits, 1, 'should have experienced 1 exit')
         t.equal(pool.size, 2, 'should be 2 when 3rd worker have been created')
         worker.on('exit', onExit)
@@ -84,21 +90,24 @@ test('pool max size - parallel', function (t) {
 
   t.equal(pool.size, 0, 'should be 0 before any call to acquire')
   count++
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     t.equal(exits, 0, 'should have experienced 0 exits')
     worker.on('exit', onExit)
   })
 
   t.equal(pool.size, 1, 'should be 1 before 2nd call to acquire')
   count++
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     t.equal(exits, 0, 'should have experienced 0 exits')
     worker.on('exit', onExit)
   })
 
   t.equal(pool.size, 2, 'should be 2 before 3rd call to acquire')
   count++
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     t.equal(exits, 1, 'should have experienced 1 exit')
     t.equal(pool.size, 2, 'should be 2 when last worker have been created')
     worker.on('exit', onExit)
@@ -118,10 +127,12 @@ test('pool max size - default', function (t) {
   const pool = new Pool()
   const opts = {workerData: 1000} // hang for 1000ms
 
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     worker.on('exit', onExit)
   })
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     worker.on('exit', onExit)
   })
   t.equal(pool.size, 1, 'should be 1 after 2nd call to acquire')
@@ -131,11 +142,44 @@ test('pool max size - default', function (t) {
   }
 })
 
+test('pool max queue size', function (t) {
+  t.plan(9)
+  let exists = 3
+  const pool = new Pool({maxWaiting: 2})
+  const opts = {workerData: 1000} // hang for 1000ms
+
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
+    t.ok(worker)
+    worker.on('exit', onExit)
+  })
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
+    t.ok(worker)
+    worker.on('exit', onExit)
+  })
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
+    t.ok(worker)
+    worker.on('exit', onExit)
+  })
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.equal(err.message, 'Pool queue is full')
+    t.notOk(worker)
+  })
+  t.equal(pool.size, 1)
+
+  function onExit () {
+    if (--exists === 0) t.end()
+  }
+})
+
 test('normal', function (t) {
-  t.plan(2)
+  t.plan(3)
   const pool = new Pool()
   const opts = {workerData: 'hello from main'}
-  pool.acquire(NORMAL, opts, function (worker) {
+  pool.acquire(NORMAL, opts, function (err, worker) {
+    t.error(err)
     worker.on('message', function (msg) {
       t.equal(msg, 'hello from worker')
     })
@@ -150,9 +194,10 @@ test('normal', function (t) {
 })
 
 test('exit code', function (t) {
-  t.plan(1)
+  t.plan(2)
   const pool = new Pool()
-  pool.acquire(EXITCODE, function (worker) {
+  pool.acquire(EXITCODE, function (err, worker) {
+    t.error(err)
     worker.on('message', function (msg) {
       t.fail('should not send message')
     })
@@ -167,9 +212,10 @@ test('exit code', function (t) {
 })
 
 test('throw', function (t) {
-  t.plan(2)
+  t.plan(3)
   const pool = new Pool()
-  pool.acquire(THROW, function (worker) {
+  pool.acquire(THROW, function (err, worker) {
+    t.error(err)
     worker.on('message', function (msg) {
       t.fail('should not send message')
     })
@@ -184,15 +230,17 @@ test('throw', function (t) {
 })
 
 test('pool.destroy()', function (t) {
-  t.plan(3)
+  t.plan(5)
   const pool = new Pool({max: 10})
   const opts = {workerData: 1e6} // hang for a loooong time
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     worker.on('exit', function (code) {
       t.equal(code, 1)
     })
     worker.on('online', function () {
-      pool.acquire(HANG, opts, function (worker) {
+      pool.acquire(HANG, opts, function (err, worker) {
+        t.error(err)
         worker.on('exit', function (code) {
           t.equal(code, 1)
         })
@@ -209,15 +257,17 @@ test('pool.destroy()', function (t) {
 })
 
 test('pool.destroy(callback)', function (t) {
-  t.plan(2)
+  t.plan(4)
   const pool = new Pool({max: 10})
   const opts = {workerData: 1000} // hang for 1000ms
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     worker.on('exit', function (code) {
       t.equal(code, 1)
     })
     worker.on('online', function () {
-      pool.acquire(HANG, opts, function (worker) {
+      pool.acquire(HANG, opts, function (err, worker) {
+        t.error(err)
         worker.on('exit', function (code) {
           t.equal(code, 1)
         })
@@ -232,7 +282,7 @@ test('pool.destroy(callback)', function (t) {
 })
 
 test('async_hooks', function (t) {
-  t.plan(2)
+  t.plan(4)
 
   class Context extends Map {
     get current () {
@@ -261,12 +311,14 @@ test('async_hooks', function (t) {
   const opts = {workerData: 1000} // hang for 1000ms
 
   context.current = 1
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     t.equal(context.current, 1)
     worker.on('exit', onExit)
   })
   context.current = 2
-  pool.acquire(HANG, opts, function (worker) {
+  pool.acquire(HANG, opts, function (err, worker) {
+    t.error(err)
     t.equal(context.current, 2)
     worker.on('exit', onExit)
   })

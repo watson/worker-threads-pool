@@ -32,7 +32,8 @@ const Pool = require('worker-threads-pool')
 const pool = new Pool({max: 5})
 
 for (let i = 0; i < 100; i++) {
-  pool.acquire('/my/worker.js', function (worker) {
+  pool.acquire('/my/worker.js', function (err, worker) {
+    if (err) throw err
     console.log(`started worker ${i} (pool size: ${pool.size})`)
     worker.on('exit', function () {
       console.log(`worker ${i} exited (pool size: ${pool.size})`)
@@ -50,6 +51,9 @@ for (let i = 0; i < 100; i++) {
 - `max` - Maximum number of workers allowed in the pool. Other workers
   will be queued and started once there's room in the pool (default:
   `1`)
+- `maxWaiting` - Maximum number of workers waiting to be started when
+  the pool is full. The callback to `pool.acquire` will be called with
+  an error in case this limit is reached
 
 ### `pool.size`
 
@@ -61,8 +65,8 @@ The `filename` and `options` arguments are passed directly to [`new
 Worker(filename,
 options)`](https://nodejs.org/api/worker_threads.html#worker_threads_new_worker_filename_options).
 
-The `callback` argument will be called with the worker once it's
-created.
+The `callback` argument will be called with the an optional error object
+and the worker once it's created.
 
 ### `pool.destroy([callback])`
 
