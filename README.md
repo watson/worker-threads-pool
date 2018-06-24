@@ -3,6 +3,8 @@
 Easily manage a pool of [Node.js Worker
 Threads](https://nodejs.org/api/worker_threads.html).
 
+[![npm](https://nodei.co/npm/worker-threads-pool.png)](https://www.npmjs.com/package/worker-threads-pool)
+
 [![Build status](https://travis-ci.org/watson/worker-threads-pool.svg?branch=master)](https://travis-ci.org/watson/worker-threads-pool)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
 
