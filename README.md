@@ -14,9 +14,9 @@ npm install worker-threads-pool --save
 
 ## Prerequisites
 
-Worker Threads in Node.js are still an experimental feature. To use
-Worker Threads, you need to run `node` with the `--experimental-worker`
-flag:
+Worker Threads in Node.js are still an experimental feature and is only
+supported in Node.js v10.5.0 and above. To use Worker Threads, you need
+to run `node` with the `--experimental-worker` flag:
 
 ```
 node --experimental-worker app.js
