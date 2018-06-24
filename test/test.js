@@ -112,6 +112,24 @@ test('pool max size - parallel', function (t) {
   }
 })
 
+test('pool max size - default', function (t) {
+  let exists = 2
+  const pool = new Pool()
+  const opts = {workerData: 1000} // hang for 1000ms
+
+  pool.acquire(HANG, opts, function (worker) {
+    worker.on('exit', onExit)
+  })
+  pool.acquire(HANG, opts, function (worker) {
+    worker.on('exit', onExit)
+  })
+  t.equal(pool.size, 1, 'should be 1 after 2nd call to acquire')
+
+  function onExit () {
+    if (--exists === 0) t.end()
+  }
+})
+
 test('normal', function (t) {
   t.plan(2)
   const pool = new Pool()
