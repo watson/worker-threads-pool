@@ -19,6 +19,7 @@ module.exports = class Pool {
   }
 
   acquire (filename, opts, cb) {
+    if (typeof opts === 'function') return this.acquire(filename, undefined, opts)
     if (this._workers.size === this._max) {
       this._queue.push(new QueuedWorkerThread(this, filename, opts, cb))
       return

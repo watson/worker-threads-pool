@@ -32,7 +32,7 @@ const Pool = require('worker-threads-pool')
 const pool = new Pool({max: 5})
 
 for (let i = 0; i < 100; i++) {
-  pool.acquire('/my/worker.js', {}, function (worker) {
+  pool.acquire('/my/worker.js', function (worker) {
     console.log(`started worker ${i} (pool size: ${pool.size})`)
     worker.on('exit', function () {
       console.log(`worker ${i} exited (pool size: ${pool.size})`)
@@ -55,7 +55,7 @@ for (let i = 0; i < 100; i++) {
 
 Number of active workers in the pool.
 
-### `pool.acquire(filename, options, callback)`
+### `pool.acquire(filename[, options], callback)`
 
 The `filename` and `options` arguments are passed directly to [`new
 Worker(filename,

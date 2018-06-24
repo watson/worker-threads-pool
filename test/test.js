@@ -152,8 +152,7 @@ test('normal', function (t) {
 test('exit code', function (t) {
   t.plan(1)
   const pool = new Pool()
-  const opts = {workerData: 'hello from main'}
-  pool.acquire(EXITCODE, opts, function (worker) {
+  pool.acquire(EXITCODE, function (worker) {
     worker.on('message', function (msg) {
       t.fail('should not send message')
     })
@@ -170,8 +169,7 @@ test('exit code', function (t) {
 test('throw', function (t) {
   t.plan(2)
   const pool = new Pool()
-  const opts = {workerData: 'hello from main'}
-  pool.acquire(THROW, opts, function (worker) {
+  pool.acquire(THROW, function (worker) {
     worker.on('message', function (msg) {
       t.fail('should not send message')
     })
