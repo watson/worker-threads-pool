@@ -47,8 +47,8 @@ Pool.prototype.acquire = function (filename, opts, cb) {
   }
 }
 
-Pool.prototype.destroy = function (cb) {
-  const next = afterAll(cb || noop)
+Pool.prototype.destroy = function (cb = noop) {
+  const next = afterAll(cb)
   for (let worker of this._workers) {
     worker.terminate(next())
   }
