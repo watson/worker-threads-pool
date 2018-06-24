@@ -3,6 +3,8 @@
 const {Worker} = require('worker_threads')
 const afterAll = require('after-all')
 
+const noop = function () {}
+
 module.exports = Pool
 
 function Pool (opts) {
@@ -46,9 +48,8 @@ Pool.prototype.acquire = function (filename, opts, cb) {
 }
 
 Pool.prototype.destroy = function (cb) {
-  cb = cb || function () {}
-  const next = afterAll(cb)
-  for (let worker of this._workers.values()) {
+  const next = afterAll(cb || noop)
+  for (let worker of this._workers) {
     worker.terminate(next())
   }
 }
