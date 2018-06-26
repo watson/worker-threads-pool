@@ -1,6 +1,7 @@
 'use strict'
 
 const {Worker} = require('worker_threads')
+const {AsyncResource} = require('async_hooks')
 const afterAll = require('after-all')
 
 const noop = function () {}
@@ -19,7 +20,7 @@ module.exports = class Pool {
 
   acquire (filename, opts, cb) {
     if (this._workers.size === this._max) {
-      this._queue.push([filename, opts, cb])
+      this._queue.push(new QueuedWorkerThread(this, filename, opts, cb))
       return
     }
 
@@ -37,8 +38,8 @@ module.exports = class Pool {
       self._workers.delete(worker)
       worker.removeListener('error', done)
       worker.removeListener('exit', done)
-      const next = self._queue.shift()
-      if (next) self.acquire.apply(self, next)
+      const resource = self._queue.shift()
+      if (resource) resource.addToPool()
     }
   }
 
@@ -47,5 +48,21 @@ module.exports = class Pool {
     for (let worker of this._workers) {
       worker.terminate(next())
     }
+  }
+}
+
+class QueuedWorkerThread extends AsyncResource {
+  constructor (pool, filename, opts, cb) {
+    super('worker-threads-pool:enqueue')
+    this.pool = pool
+    this.filename = filename
+    this.opts = opts
+    this.cb = cb
+  }
+
+  addToPool () {
+    this.pool.acquire(this.filename, this.opts, worker => {
+      this.runInAsyncScope(this.cb, null, worker)
+    })
   }
 }
