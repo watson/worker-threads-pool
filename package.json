@@ -1,6 +1,6 @@
 {
   "name": "worker-threads-pool",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Easily manage a pool of Node.js Worker Threads",
   "main": "index.js",
   "directories": {
@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/watson/worker-threads-pool#readme",
   "coordinates": [
-    55.777612,
-    12.590162
+    55.777628,
+    12.590195
   ]
 }
