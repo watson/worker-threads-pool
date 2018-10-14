@@ -223,7 +223,7 @@ test('throw', function (t) {
       t.equal(err.message, 'boom!')
     })
     worker.on('exit', function (code) {
-      t.equal(code, 0)
+      t.equal(code, 1)
       t.end()
     })
   })
