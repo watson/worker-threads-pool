@@ -25,6 +25,26 @@ node --experimental-worker app.js
 
 ## Usage
 
+Implementing a thread pool.
+```js
+const Pool = require('worker-threads-pool')
+
+const pool = new Pool({max: 5})
+
+pool.acquire('/my/worker.js', { workerData }, function (err, worker) {
+  if (err) throw err
+  console.log('started worker')
+  worker.on('exit', function () {
+    console.log('worker exited')
+  })
+})
+```
+If the number of workers reach the max the following requests will be enqueued.
+
+### Max workers example 
+
+The example below shows a case when there are more requests than workers, in this case, it will run a maximum of 5 workers in parallel and the rest will be enqueued and will be called as soon the pool is freed.
+
 ```js
 const Pool = require('worker-threads-pool')
 
