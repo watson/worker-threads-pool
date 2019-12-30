@@ -35,6 +35,7 @@ module.exports = class Pool {
     const worker = new Worker(filename, opts)
     worker.once('error', done)
     worker.once('exit', done)
+    worker.once('message', done)
 
     this._workers.add(worker)
 
@@ -44,6 +45,7 @@ module.exports = class Pool {
       self._workers.delete(worker)
       worker.removeListener('error', done)
       worker.removeListener('exit', done)
+      worker.removeListener('message', done)
       const resource = self._queue.shift()
       if (resource) resource.addToPool()
     }
